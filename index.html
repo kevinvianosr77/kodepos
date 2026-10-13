@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kode Pos Indonesia</title>
+<style>
+  * { box-sizing: border-box; font-family: Arial, sans-serif; }
+  body { margin: 0; background: #f3f4f6; }
+  header { background: #f43f5e; color: #fff; padding: 12px 24px; font-weight: bold; font-size: 14px; }
+  .container { max-width: 760px; margin: 20px auto; padding: 0 12px; }
+  .box { background: #fff; padding: 18px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+  .box p { font-size: 12px; color: #555; margin-top: 0; }
+  label { display: block; font-size: 12px; font-weight: bold; margin: 12px 0 4px; }
+  select { padding: 6px; font-size: 13px; min-width: 160px; }
+  .search { display: flex; margin-top: 4px; }
+  .search input { flex: 1; padding: 8px; font-size: 13px; border: 1px solid #3b82f6; border-radius: 4px 0 0 4px; }
+  .search button { padding: 8px 20px; background: #22c55e; color: #fff; border: none; border-radius: 0 4px 4px 0; cursor: pointer; }
+  h3 { margin: 20px 0 2px; }
+  .info { font-size: 12px; color: #555; margin-bottom: 10px; }
+  .hasil { background: #fff; border-radius: 4px; overflow: hidden; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+  .hasil .judul { background: #22c55e; color: #fff; padding: 6px 12px; font-size: 12px; font-weight: bold; }
+  .hasil .isi { padding: 10px 12px; font-size: 12px; background: #f0fdf4; }
+</style>
+</head>
+<body>
+<header>Kode Pos Indonesia</header>
+
+<div class="container">
+  <div class="box">
+    <p>Cari kode pos di wilayah Indonesia dengan memasukkan beberapa kata kunci pencarian di bawah ini.</p>
+
+    <label for="provinsi">Provinsi</label>
+    <select id="provinsi"></select>
+
+    <label for="kota">Kota atau Kabupaten</label>
+    <select id="kota"></select>
+
+    <label for="kata">Masukkan Kata Kunci Pencarian</label>
+    <div class="search">
+      <input type="text" id="kata" placeholder="Kode pos / kelurahan / kecamatan">
+      <button id="btnCari">Cari</button>
+    </div>
+  </div>
+
+  <div id="output"></div>
+</div>
+
+<script>
+  const data = {
+    "Jawa Timur": {
+      "Surabaya": [
+        { pos: "60111", kel: "Keputih",          kec: "Sukolilo" },
+        { pos: "60117", kel: "Gebang Putih",     kec: "Sukolilo" },
+        { pos: "60118", kel: "Menur Pumpungan",  kec: "Sukolilo" },
+        { pos: "60119", kel: "Medokan Semampir", kec: "Sukolilo" },
+        { pos: "60286", kel: "Airlangga",        kec: "Gubeng" },
+        { pos: "60281", kel: "Gubeng",           kec: "Gubeng" },
+        { pos: "60275", kel: "Genteng",          kec: "Genteng" },
+        { pos: "60243", kel: "Wonokromo",        kec: "Wonokromo" }
+      ],
+      "Malang": [
+        { pos: "65111", kel: "Klojen",  kec: "Klojen" },
+        { pos: "65144", kel: "Dinoyo",  kec: "Lowokwaru" }
+      ],
+      "Sidoarjo": [
+        { pos: "61254", kel: "Gedangan", kec: "Gedangan" },
+        { pos: "61211", kel: "Sidoarjo", kec: "Sidoarjo" }
+      ]
+    },
+    "Jawa Barat": {
+      "Bandung": [
+        { pos: "40135", kel: "Dago",    kec: "Coblong" },
+        { pos: "40161", kel: "Pasteur", kec: "Sukajadi" }
+      ]
+    },
+    "DKI Jakarta": {
+      "Jakarta Pusat": [
+        { pos: "10310", kel: "Menteng", kec: "Menteng" },
+        { pos: "10110", kel: "Gambir",  kec: "Gambir" }
+      ]
+    }
+  };
+
+  const provEl = document.getElementById("provinsi");
+  const kotaEl = document.getElementById("kota");
+  const kataEl = document.getElementById("kata");
+  const out = document.getElementById("output");
+
+  function isiProvinsi() {
+    Object.keys(data).forEach(p => provEl.add(new Option(p, p)));
+    isiKota();
+  }
+
+  function isiKota() {
+    kotaEl.innerHTML = "";
+    Object.keys(data[provEl.value]).forEach(k => kotaEl.add(new Option(k, k)));
+  }
+
+  function cari() {
+    const kata = kataEl.value.trim().toLowerCase();
+    const list = data[provEl.value][kotaEl.value];
+
+    const hasil = list.filter(d =>
+      !kata ||
+      d.pos.includes(kata) ||
+      d.kel.toLowerCase().includes(kata) ||
+      d.kec.toLowerCase().includes(kata)
+    );
+
+    let html = "<h3>Hasil Pencarian</h3>";
+    html += '<div class="info">Hasil pencarian kode pos dengan menggunakan kata kunci "' +
+            (kataEl.value || "semua") + '" telah ditemukan sebanyak ' + hasil.length + ' hasil.</div>';
+
+    hasil.forEach(d => {
+      html += '<div class="hasil"><div class="judul">' + d.kel + '</div>' +
+              '<div class="isi">Kode pos <b>' + d.pos + '</b> untuk daerah Kelurahan ' + d.kel +
+              ', Kecamatan ' + d.kec + ', ' + kotaEl.value + ', ' + provEl.value + '.</div></div>';
+    });
+
+    out.innerHTML = html;
+  }
+
+  provEl.addEventListener("change", () => { isiKota(); cari(); });
+  kotaEl.addEventListener("change", cari);
+  document.getElementById("btnCari").addEventListener("click", cari);
+  kataEl.addEventListener("keydown", e => { if (e.key === "Enter") cari(); });
+
+  isiProvinsi();
+</script>
+</body>
+</html>
